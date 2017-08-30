@@ -1,7 +1,7 @@
 import os
 import sys
 
-
+############ store diet family map file into dictionary
 
 myfam = open('preylist.families.added', 'r')
 
@@ -11,6 +11,9 @@ for line in myfam:
 	info = line.strip().split('\t')
 
 	famdict[info[0]] = info[1]
+
+
+########## add families to each data line
 
 myfile = open('conus.prey.txt', 'r')
 
@@ -35,6 +38,8 @@ for line in myfile:
 
 out.close()
 
+############## store dictionary, key=species, leading to value of families for that species
+
 myfam = open('conus.prey.families.added.txt', 'r')
 
 speciesdict = dict()
@@ -56,6 +61,8 @@ for line in myfam:
 				speciesdict[info[0]].append(info[4])
 			else:
 				speciesdict[info[0]] = [info[4]]
+
+# loop through all species and diet families, create yes/no diet matrix
 
 out2 = open('diet.specificty.traits', 'w')
 
