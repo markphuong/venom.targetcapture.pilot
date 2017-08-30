@@ -1,0 +1,61 @@
+OBJECTIVE: from phuong et al. 2016, need to denote exon boundaries for the A superfamily proteins so that you can tell if the sequence is exon 1 or exon 2
+
+for the 12 species with transcriptomes, brought the following:
+
+1. _venom_contigs_reassembled.fa from /pylon2/bi4s86p/phuong/venom/3reassembled
+2. all_extractedseq_renamed.fa from /nfs/LabShared/MarkPhuong/final/analyses/process_Summary_stats/2separateSpecies
+3. all_proteins_renamed.fa from /nfs/LabShared/MarkPhuong/final/analyses/process_Summary_stats/2separateSpecies
+
+
+python SeparateSpecies.py
+
+-- separates the genes into two separate files.
+
+creates:
+
+1. _venomprots.fa
+2. _extractedseq.fa
+
+
+
+python venom_exon_wrapper.py --map species_name_mapping
+
+-- wraps venom_exon_boundaries.py which does the following:
+
+for each protein identified from transcriptome work, blast it to the assembled exon capture data venom genes for that specific gene family, 
+and find the contigs that blast to the first and second exon/intron, then create a genomic sequence by combining the two contigs and
+run exnerate and get the exact cutting coordinates.
+
+creates:
+
+1. *_venomblastcoordfile -- saves blast values for saved contigs that were used as the genomic sequence for exonerate to define exon/intron boundaries
+2. *_venombed -- exact cut coordinates from exonerate
+
+inferred exon had to be greater than 5bp in length to receive a 'didnotblast' flag
+
+has 158 lines, because you have 79 A superfamily proteins, and every A protein has 2 exons
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

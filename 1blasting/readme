@@ -1,0 +1,30 @@
+cp ../0fix_reference/venom_reference.fa ./
+
+some notes:
+1. some parts of the sequences were filtered due to repetitive regions
+2. included 100bp from each end of the coding region; some of these could not be extended out 100bp in each direction because they were poorly assembled
+
+cp /nfs/LabShared/MarkPhuong/exonCapturePilot/2recipblast_phylogenetics/1.1mapping/*.NI ./
+
+makeblastdb -dbtype nucl -in venom_reference.fa
+
+
+############################
+
+sbatch blastbatch
+
+runs BlastWrapper.py
+
+
+grabs any contig that matches the venom reference database (contig_filter_venom.py)
+grabs all best hits that are non-overlapping because sometimes different venom gene exons would be on the same contig
+
+needs:
+
+1. *assemblies_clustered.fasta.NI files
+
+
+creates:
+
+1. *.blastoutput -- full blast output (query is the assembled spades contigs, db is the venom reference)
+2. *_venom_filtered.blast -- (all non overlapping best hits per contig from the assembled spades contigs)

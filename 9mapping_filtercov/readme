@@ -1,0 +1,14 @@
+cp ../8cov_modify_filter/*definedseqs_v2.fa ./
+cp ../8cov_modify_filter/mapfile ./
+
+
+remap and remove sequences with less than 10X coverage across the 'exon' defined region
+
+also fixes the sequences if there are '1/1' values
+
+
+creates:
+
+1. *_definedseqs_v3.fa -- sequences where low coverage across the predicted exon region were removed
+
+sbatch mappingdir9batch

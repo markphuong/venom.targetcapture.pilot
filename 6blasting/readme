@@ -1,0 +1,25 @@
+cp ../5makenewref/mynewreference.fa ./
+cp ../3reassembled/*_venom_contigs_reassembled.fa .
+cp ../4sliceproteins/makesomethingNotInterleaved.py ./
+cp ../4sliceproteins/chooseone.py ./
+
+makeblastdb -dbtype nucl -in mynewreference.fa
+
+sbatch exonblastbatch
+
+
+runs python chooseone.py
+
+-- you originally ran all seeds with PRICE using 5 MPI values. this script chooses the longest contig out of the 5 interations
+
+
+then, runs simple blasts and keeps the best hit for each assembled contig, only if they align across the entire defined exon region in the reference
+
+creates:
+
+1. *.blastfail -- lists hits that did not align across the entire reference
+2. *_best_venom_hits.fasta -- fasta file containing the contigs that matched the criteria above (had blast hit across entire predicted exon reference)
+3. *.venom_exon.filtered.blastoutput -- best hits in the correct orientation
+
+you did an initial blast so that you could filter out poor hits, and then you used swap_orientation to orient everything in the correct way. this made it easier for processing in later steps
+you did another blast where you limited the results to just one hit per assembled contig, and the results were consistent with previous trials of trying to get a filtered blast output set.

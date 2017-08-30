@@ -1,0 +1,56 @@
+cp ../6blasting/*_best_venom_hits.fasta ./
+cp ../6blasting/mynewreference.fa ./
+cp ../6blasting/*filtered.blastoutput ./
+
+
+####### need to create a file with just the protein sequences to help identify these regions across all the samples
+cp ../stats/0venom_exon_numbers/all_venom_bed ./
+cp ../4sliceproteins/slice_proteins.py ./
+cp ../4sliceproteins/all_extractedseq_renamed.fa ./
+cp ../5makenewref/all_utr_annotated ./
+cp ../5makenewref/all_with_utrs.fa ./
+
+python slice_proteins.py - creates venom_proteins_sliced.fa
+
+python slice_proteins_utr.py - creates venom_proteins_sliced_utr.fa
+
+python slice_proteins_utr.py
+creates:
+1. venom_proteins_sliced_utr.fa
+cat venom_proteins_sliced.fa venom_proteins_sliced_utr.fa > venom_proteins_guess.fa
+
+cp ../4sliceproteins/makesomethingNotInterleaved.py ./
+
+
+################
+python guess_regions.py MAP48_best_venom_hits.fasta mynewreference.fa venom_proteins_sliced.fa MAP48.blasttest MAP48_define_exon.blastoutputs MAP48_definedseqs.fa
+
+
+sbatch guessbatch
+
+this script tries to guess the exon coding region either using (a) exonerate (b) blastx (c) tblastn or (d) guess the region based on overlap of the reference exon region to the assembled contig
+
+wraps guess_regions.py, which will go through every hit in *.venom_exon.filtered.blastoutput
+
+1. align the assembled venom contig + exon (and intron) reference using mafft
+2. find coordinates where the exon reference region is aligned to the assembled contig
+3. cut this region plus 30 bp on each side (allowing 10 extra amino acids) and try to find the exon using the protein reference and align them using blastx, tblastn, or exonerate
+4. when blasting the protein vs. this temporary exon (Which includes the region that is aligned to the reference exon + 30 bp on each side), choose the algorithm that results in the longest predicted venom exon
+5. if all else fails, simply guess the region by using the coordinates from the original alignment between the assembled contig and the reference (Which includes a defined exon region and the rest of the intron)
+
+the most important file here is:
+
+1. *_definedseqs.fa, which tells you how the exon was identified and what the boundaries are.
+
+
+############### wanted to run this faster
+
+cp ../2assemble_by_seed/makemapfile.py ./
+cp ../2assemble_by_seed/makebatchfiles.py ./
+
+python makemapfile.py
+python makebatchfiles.py
+python sbatch_wrapper.py
+
+
+

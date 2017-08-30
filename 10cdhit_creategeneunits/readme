@@ -1,0 +1,16 @@
+cp ../9mapping_filtercov/*v3.fa ./
+cp ../9mapping_filtercov/mapfile ./
+
+
+v3 -- has low cov across predicted exon region removed and 1/1 bases changed
+v4 -- merged all contigs that were at least 98% identity using cd-hit-est
+
+v5 -- sequences that are masked for coverage -- essentially final genes
+
+
+you applied cdhit to v3, creating v4
+
+you remapped everything, and then did the final coverage filtering, where you masked sequences below 10X coverage for downstream analysis. (v5)
+you also removed any sequence that did not maintain 10X coverage across the exon region
+
+sbatch mappingdir10batch

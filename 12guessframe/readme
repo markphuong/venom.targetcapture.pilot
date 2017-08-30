@@ -1,0 +1,8 @@
+cp ../11phasehaplotypes/*v5.fa ./
+
+sbatch cuttranslatebatch
+
+
+cat *_cut_and_translated.fa > all_cut_and_translated.fa
+
+cp ../7guess_regions/*.venom_exon.filtered.blastoutput ./

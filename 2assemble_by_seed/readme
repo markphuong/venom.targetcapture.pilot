@@ -1,0 +1,100 @@
+scp analysis@azathoth.eeb.ucla.edu:/nfs/LabShared/MarkPhuong/exonCapturePilot/3venom/venom_try2/1blasting/*.NI ./
+scp analysis@azathoth.eeb.ucla.edu:/nfs/LabShared/MarkPhuong/exonCapturePilot/3venom/venom_try2/1blasting/*_filtered.blast ./
+scp analysis@azathoth.eeb.ucla.edu:/nfs/LabShared/MarkPhuong/exonCapturePilot/2recipblast_phylogenetics/1.1mapping/*_sorted.bam ./
+
+python venom_builder_wrapper.py --map mapfile
+
+wraps commands for three scripts:
+
+1. python get_seeds.py {sample}
+2. python mapping.py {sample}
+3. python assemble_by_seed.py {sample}
+
+
+##########
+python get_seeds.py
+
+requires:
+
+1. _assemblies_clustered.fasta.NI (from 0blasting)
+2. *filtered.blast (cp ../1blasting/*filtered.blast ./)
+3. _sorted.bam (from /nfs/LabShared/MarkPhuong/exonCapturePilot/2recipblast_phylogenetics/1.1mapping) and .bai
+
+this script generates 'seed' sequences which you build out in later scripts.
+This is because paralogous sequences do not assemble well, especially when they are closely related and share sequence similarity
+through this method, you find all possible seqeunces that match to a particular gene family.
+
+then, you find the region that blasted to mRNA sequences, and pull out all reads that mapped to any part of that region. 
+with those reads, you run cd-hit-est and cap3 to assemble those reads together, and keep all seed sequences that blast to at least 100bp of the
+venom reference.
+
+
+if a seed sequence (via the blast result) is below 100bp, you extend 1 bp on each side (if possible) until you get to >= 100bp seed or cannot extend anymore
+
+you also implement trf (tandem repeat finder) to try to find seed sequences that do not contain simple repeats (simple dinucleotide repeats next to venom exons)
+you do this by trying to extend the seed left or right, but if both of those situations still have repeats, you just keep the original seed
+
+you do not consider searches that are below 100bp aligned to the original a gene superfamily reference to keep the seed size equal to the read size
+
+Once it loops through all the potential seeds, it merges all seeds with 100% identity
+
+Then, any reads that mapped to regions that were at all blastable to A_superfamily conotoxins and with the locus region being at least 100bp, we grabbed all those reads
+and saved them to 'venomreads.fq'
+
+creates: 
+
+1. _mytempseed.fa
+2. _prelim_seeds
+3. _seeds_merged
+4. _venomreads1.fq
+5. _venomreads2.fq
+6. _venomreadsunpaired.fq
+
+
+************** note, some seeds < 100bp because of indels, you picked seeds that were at least 100bp based on the total alignment length, which is why some seeds of 99 bp got through ********
+
+#########
+
+python mapping.py
+
+needs:
+
+1. _venomreads1.fq
+2. _venomreads2.fq
+3. _venomreadsunpaired.fq
+4. _seeds_merged
+
+maps only reads that originally mapped to the A gene superfamily to the 'seed' sequences
+
+creates:
+
+1. _venom_sorted.bam
+
+######
+
+python assemble_by_seed.py
+
+needs:
+
+1. MAP33_venom_sorted.bam
+2. _venomreads1.fq
+3. _venomreads2.fq
+
+for each seed, pull all reads that mapped to that seed and also its mate (only paired sequences in this script)
+and then assemble using PRICE for 5 cycles
+keep contigs that extend longer than the original seed
+
+-- loops over 5 mpi values [90, 92, 94, 96, 98]
+
+and creates the following:
+
+1. _venom_contigs_reassembled.fa
+
+################################
+
+python makemapfiles.py
+python makebatchfiles.py
+
+
+
+

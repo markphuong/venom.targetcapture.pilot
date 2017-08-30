@@ -1,0 +1,3 @@
+cp ../10cdhit_creategeneunits/*v5.fa ./
+cp ../10cdhit_creategeneunits/*vars.vcf ./
+cp ../10cdhit_creategeneunits/*md*bam* ./

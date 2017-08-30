@@ -1,0 +1,154 @@
+cp ../4sliceproteins/*_venombed ./
+cp ../4sliceproteins/*_venomblastcoordfile ./
+
+cp ../4sliceproteins/*.subset ./
+
+
+###### get list of short terminal exons
+cat *venombed_annotated > all_venombed_annotated
+python list_short_terminal_exons.py
+
+creates:
+
+1. short_terminal_exons.list --
+a list that contains
+(a) sequence ID
+(b) start of terminal exon
+(c) end of terminal exon
+(d) sample ID
+(e) it did not blast
+(f) exon number
+(h) number of pieces
+
+########## get transcripts + utr sequences
+
+cp ../stats/4reassembleUTRsTranscriptome/1filter_reassembled_contigs/*.annotated ./
+-- the *.annotated files contain the unique ID for a particular conotixn transcript, species name, superfamily, coverage plus anotated the mpi number and contig number, start, and end of where the coding region is
+
+cat *.CO.annotated > all_venom_utrs.fa
+cat *extractedseq.fa >all_extractedseq.fa
+makeblastdb -dbtype nucl -in all_venom_utrs.fa
+blastn -query all_extractedseq.fa -db all_venom_utrs.fa -outfmt 6 -out utr_transcript.blastoutput -evalue 1e-10 -word_size 11
+
+python grab_utr_sequences.py -- you decided to take the best hit of each phuong transcript that needed UTRs because they had short terminal exons (identified in 'short_terminal_exons.list')
+this is because the best phuong transcript ID to the reassembled transcript with UTRs was not always a good hit (poor reassembly due to over representation of other reads not belonging to the gene,
+owing to the similarity of signal sequences)
+
+for example, for Vr_T_11, there is an indel between the exact blast of Vr_T_11 and the same transcript attempted to reassemble with UTRs:
+
+Vr_T_11|varius|T|552.485576923  Vr_T_12|varius|T|639.163461538_90_1|93|300      99.52   207     1       0       1       207     94      300     5e-106  377
+Vr_T_11|varius|T|552.485576923  Vr_T_13|varius|T|555.163461538_92_1|142|349     99.03   207     2       0       1       207     143     349     2e-104  372
+Vr_T_11|varius|T|552.485576923  Vr_T_9|varius|T|989.865384615_90_1|104|311      98.55   207     3       0       1       207     105     311     1e-102  366
+Vr_T_11|varius|T|552.485576923  Vr_T_11|varius|T|552.485576923_90_1|90|297      94.69   207     11      0       1       207     91      297     2e-89   322
+
+
+needs: 
+
+1. utr_transcript.blastoutput - a blast between all the coding regions against all the coding+utr sequences
+2. short_terminal_exons.list
+3. all_venom_utrs.fa
+
+creates:
+
+1. *_with_utrs.fa
+a fasta file containing the utr sequence + in the last column, the original phuong transcript ID that needed UTRs. everything else before that was the best blast hit for that sequence.
+I found that the best blast hit was more similar to the original transcript, and thus the intervening utr regions were likely similar
+
+output from script:
+
+374 -number of sequences in short_terminal_exons.list
+370 - number of unique sequences to come out of this script (did not want duplicates. this occurred if the same sequence was reassembled from the transcriptomes)
+
+Sp_M_19|sponsalis|M|2810.32642487
+MSKLGVLLTICLLLFPLTALPLDGDQAADRPTERMKSDVEHYLNLQIRGCCPRRKCHTSCRSC
+Mr_T_40|marmoreus|T|33595.96875
+MRCLPVLIILLLLTASAPGVDVLPKTEDDVPLSSVYGNGKSILRGILRKGICC
+CMrX|marmoreus|T|134767.262032
+MRCLPVLIILLLLTASAPGVDVLPKTEDDVPLSSVYGNGKSILRGILRKGICC
+Im_MMLFM_1|imperialis|MMLFM|671.777385159
+MMLFLFAAIISTMVSTTMAGCESNKHKCAWKDPTGGKHNRCDCPKNTCTDDKNHTIIVDYGDTYIYEFYICKEIAKFPNCTGQEDVMDSSANEL
+Vr_T_22|varius|T|242.72195122
+MRCLPVFIILLLLVPTAHSIVAQLKTKYDVPKASFQDNAKGILQRHSGPHACCPEYDWCCLWRGEGKW
+
+** this script will print out sequences that did not have a good start codon and stop codon. all of them did not end with a stop codon, and so had to modify the stop position
+
+##################### now reassign 
+sbatch slicebatch
+
+runs venom_exon_wrapper_dir5.py
+
+like in 4sliceproteins, but only focusing on the utrs
+
+creates:
+1. venombed_utr
+
+ex:
+
+Ar_B1_3|arenatus|B1|325.89298893_90_1|117|387|Ar_B1_3   0       298     MAP56   didnotblast     exon1
+Ar_B1_3|arenatus|B1|325.89298893_90_1|117|387|Ar_B1_3   298     357     MAP56   blasted exon2
+Ar_B1_3|arenatus|B1|325.89298893_90_1|117|387|Ar_B1_3   357     374     MAP56   didnotblast     exon3
+Ar_B1_3|arenatus|B1|325.89298893_90_1|117|387|Ar_B1_3   374     486     MAP56   blasted exon4
+Ar_B1_3|arenatus|B1|325.89298893_90_1|117|387|Ar_B1_3   486     493     MAP56   didnotblast     exon5
+^utr transcript name, start and end of the 'exons'
+
+2. venomblastcoordfile_utr
+
+
+###################
+
+sbatch newrefbatch
+
+runs new_ref_wrapper.py
+
+for every species of the original 12 transcriptomes
+
+makeblastdb -dbtype nucl -in {ID}_venom_contigs_reassembled.fa.NI.subset ## make datbase of reassembled exon capture venom contigs
+python add_column_to_bed.py {species}_venombed {species}_venombed_annotated ## add pieces to each item
+python add_column_to_bed_utr.py {species}_venombed_utr {species}_venombed_utr_annotated ## add 'pieces' to each column, fix exon numbering because you only want sequences containg utr + coding regions
+
+** sometimes the blasted sequence falls into the area of the coding region, but really it did -not- capture it:
+Ar_T_16|arenatus|T|3128.12980769_98_1|128|335|Ar_T_16   90      192     MAP56   blasted exon1   5pieces
+Ar_T_16|arenatus|T|3128.12980769_98_1|128|335|Ar_T_16   192     234     MAP56   didnotblast     exon2   5pieces
+Ar_T_16|arenatus|T|3128.12980769_98_1|128|335|Ar_T_16   234     305     MAP56   blasted exon3   5pieces
+Ar_T_16|arenatus|T|3128.12980769_98_1|128|335|Ar_T_16   305     334     MAP56   didnotblast     exon4   5pieces
+Ar_T_16|arenatus|T|3128.12980769_98_1|128|335|Ar_T_16   334     816     MAP56   blasted exon5   5pieces
+coding region is missing, and the rest is likely just the utr (exon 5)
+
+
+python slice_proteins.py {ID} {species} ## slice sequences based on the venombed files
+python slice_proteins_utr.py {ID} {species}
+
+
+blastn -query {species}_venom_genes_sliced.fa -db {ID}_venom_contigs_reassembled.fa.NI.subset -outfmt 6 -out {ID}.venom_exon_slicing.blastoutput -evalue 1e-10 -word_size 11 -perc_identity 90
+python generate_new_reference.py {ID} {species}
+
+
+
+python generate_new_ref.py
+
+creates:
+
+1. mynewreference.fa -- contains venom exons with full flanking regions, and each sequence is annotated for exon number and where the exon is in the sequence
+2. *_venom_genes_sliced.fa -- used information from the venombed file to cut up the exons
+
+you used this script to generate a reference that contained sequences (exons + flanking regions) that had exon number, gene superfamily, and where the gene was in the sequence
+
+you first cut up the venom genes into exon components,
+
+then you blasted every single venom exon individually (only using exons that blasted originally i.e., does not have the 'didnotblast' flag) and grabbed the best hit as the exon + flanking sequence for that particular venom exon.
+the sequence headers now contain where the exon is in the sequence, and exon number.
+
+-- this script does not incorporate exons that are less than 3bp in length
+
+makes 'failed_generate_new_ref.fail'
+
+blastoutputs have either failed because the coding region is less than 3bp or
+they are in this file because an indel fucked up the placing of the exon/intron boundaries on the reference. they are placed in this file so I can see if the script fixed those boundaries correctly.
+I do simple addition/subtraction to figure out where utr+exon transcripts hide their exon coding regions in my reference. indels mess this up because they add or subtract a few depending on the situation.
+
+
+
+#######################
+
+cat *utr_annotated > all_utr_annotated
+cat *with_utrs.fa > all_with_utrs.fa

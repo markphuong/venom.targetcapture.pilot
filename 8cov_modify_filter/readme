@@ -1,0 +1,12 @@
+cp ../7guess_regions/*definedseqs.fa ./
+cp /pylon2/bi4s86p/phuong/venom/3reassembled/*venomread*.fq ./
+
+sbatch mappingbatch
+
+runs mapping.py
+
+maps reads to contigs under stringent conditions
+accounts for duplicates
+first mapping is to fix 1/1 alleles. this creates the most important file, which is:
+
+1. *_definedseqs_v2.fa
