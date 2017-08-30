@@ -1,0 +1,71 @@
+cp /pylon2/bi4s86p/phuong/venom/stats/6clustering/2diversity_stats/*analyzethese.fa ./
+
+########## generate reference with mature unique toxins
+
+python get.mature.reference.dnaseq.py
+
+
+########
+
+cp /pylon1/bi4s86p/phuong/venom/2diversity_stats/*analyzethese.fa ./
+
+cp /pylon2/bi4s86p/phuong/venom/stats/6clustering/3distance_stats_venom/functional.region.to.exon.structure.reference ./
+
+###############
+
+note:
+
+J_mature ####### KEEP BOTH
+J_onepiece ####### KEEP BOTH
+
+
+conkunitzin_mature
+conkunitzin_onepiece #### KEEP BOTH
+conkunitzin_post
+conkunitzin_pre
+conkunitzin_signal
+
+
+
+python expression.stats.wrapper.py --map mapfile > myout
+
+runs:
+
+get.expression.stats.py
+
+requires:
+
+1. 'functional.region.to.exon.structure.reference' # exon configuration mapped to functional region
+2. 'unique.mature.toxins.reference.fa' # unique mature toxins
+3. {ID}_venom_analyzethese.fa # genes in the genome
+4. {ID}.expressionblast # blast between unique.mature.toxins.reference.fa and haplotypes.fa
+5. {ID}_haplotypes.fa
+
+
+creates:
+1. expressed.stats
+2. myout
+
+blast unique.mature.toxins.reference.fa to haplotypes.fa -- word size is 7, evalue is 1e-3, percent identity have to be 95%
+-- did lower evalue and word_size to allow for matches that less than 30bp (sometimes your mature toxins were this small)
+
+
+unique mature toxin coding sequences came from unique.mature.toxins.reference.fa
+
+and I compared these sequences to expression blast using the below criteria:
+
+a mature toxin coding sequence was 'expressed' if there was a 95% identity match to an exon identified as a mature region
+or if it didn't match a mature region (in some cases, the exon containing the mature region is msotly on another exon that is not the majority consensus exon),
+then if it covers at least 80% of the sequence, then you also call that locus expressed
+
+
+if you recovered at least 90% of the unique mature toxin coding sequences that were expressed in the transcriptome, analyze that gene family in reference to the number of sequences/genes/exons encoding
+mature toxin regions to the total number of toxin coding genes in the transcriptome. got the total number of toxin coding genes from _venom_analyzethese.fa
+
+I saved all exons that matched to the unique mature toxin coding sequences -- because unique mature toxin coding sequences can map onto multiple loci. (for example, an exon that codes for two unique mature toxins, or multiple exons that code for the same mature toxin)
+
+
+
+
+
+

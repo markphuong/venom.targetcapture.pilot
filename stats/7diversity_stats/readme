@@ -1,0 +1,3 @@
+get diversity statistics for all samples
+
+cp ../0venom_capture_success/*v5.fa ./

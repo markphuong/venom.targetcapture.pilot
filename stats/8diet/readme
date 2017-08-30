@@ -1,0 +1,45 @@
+python fill.out.table.py
+
+requires:
+1. conus.prey.txt -- from excel supplementary diet table
+
+looks through and generates a list of all unique prey items from literature
+
+generates:
+
+1. preylist -- file containing names of all unique prey items
+
+############################
+
+preylist.families.added -- went through and looked through the WORMS database and found family names for all unique prey items
+
+############################
+
+python add.families.py
+
+requires:
+
+1. preylist.families.added
+2. conus.prey.txt
+
+creates:
+
+1. conus.prey.families.added.txt -- added family name for every prey item when possible (some are NA because the prey was unidentifiable)
+
+2. diet.specificity.traits -- contains a table with every prey family, and a yes or no if that species is recorded to have eaten that family, 'NA' if no information available at all on diet
+
+there are 27 prey categories
+
+##############################
+
+python filter.dietary.breadth.py
+
+requires:
+
+1. conus.prey.families.added.txt
+
+creates:
+
+1. dietary.breadth.calculations - raw data for H values you had to calculate. Only allowed to calculate if (a) at least 5 prey food observations, (b) each prey observation had to be identified to genus level and give some indication of only being one species
+2. average.h.values - average h values for all species. NA if could not find enough info in literature
+3. all.hvalues.stats - all h values, before averaging, for every species.

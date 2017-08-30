@@ -1,0 +1,26 @@
+cp /pylon2/bi4s86p/phuong/venom/10cdhit_creategeneunits/*v4.fa ./
+
+got the following from: /nfs/LabShared/MarkPhuong/exonCapturePilot/2recipblast_phylogenetics/6.1_filter_loci/6statistics
+
+1. *6.1_filtered_recipblast
+2. removed_overlappers
+
+got the following from: /nfs/LabShared/MarkPhuong/exonCapturePilot/2recipblast_phylogenetics/6.1_filter_loci/2blastagain
+
+1. *phylo_contigs.fasta
+
+sbatch mappingcapstatsbatch
+
+did the above sbatch to run the following script:
+
+python mapping_capstats.py --map mapfile
+
+did this so you could get coverage and mapping % statistics. You chose the *phylo_contigs.fasta reference
+for the phylogenetic markers, and did not include things dumped in the 'removed_overlappers' file 
+you did this because you wanted to include most things before filtering for heterozygosity and coverage began,
+but did not want to include unconfident contigs (ie. removed overlappers)
+
+you used *_definedseqs_v4.fa for the venom reference because you wanted to use the reference
+containing non masked gene models, before filtering coverage again
+
+python get_coverage_stats_in_table.py

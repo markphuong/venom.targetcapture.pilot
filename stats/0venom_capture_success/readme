@@ -1,0 +1,129 @@
+cp ../../4sliceproteins/*_venombed ./
+cp ../../1blasting/venom_reference.fa ./
+cp ../../1blasting/all_extractedseq_renamed.fa ./
+cp ../../10cdhit_creategeneunits/*v5.fa ./
+cp ../../4sliceproteins/*extractedseq.fa ./
+
+###############################
+
+like in the 4sliceproteins directory, need to slice proteins again with final filtered dataset so that you can determine capture success and exon/intron structure
+
+instead of the assembled contigs, this uses the v5.fa of the defined sequences to generate the venombed and venomblast files
+
+sbatch slicebatch
+
+python venom_exon_boundaries.py --map mapfile
+
+requires:
+
+1. definedseqs_v5.fa -- final filtered dataset
+2. extractedseq.fa -- transcriptome dataset
+
+creates:
+
+1. stats_venombed
+2. stats_venomblastcoordfile
+3. didnotblast
+
+
+####### add pieces
+
+python annotate_and_slice_wrapper.py --map mapfile
+
+##########
+
+cat *venombed_annotated >all_venombed_annotated
+
+python list_short_terminal_exons.py
+
+########### get transcripts with utrs
+
+cp ../4reassembleUTRsTranscriptome/1filter_reassembled_contigs/*annotated ./
+
+########## find best hit per extracted seq transcript 
+
+cat *.CO.annotated > all_venom_utrs.fa
+cat *extractedseq.fa >all_extractedseq.fa
+makeblastdb -dbtype nucl -in all_venom_utrs.fa
+blastn -query all_extractedseq.fa -db all_venom_utrs.fa -outfmt 6 -out utr_transcript.blastoutput -evalue 1e-10 -word_size 11
+
+######## grab best utr hits
+
+cp ../../5makenewref/grab_utr_sequences.py ./
+python grab_utr_sequences.py
+output from this script:
+
+Sp_M_19|sponsalis|M|2810.32642487
+MSKLGVLLTICLLLFPLTALPLDGDQAADRPTERMKSDVEHYLNLQIRGCCPRRKCHTSCRSC
+Mr_T_40|marmoreus|T|33595.96875
+MRCLPVLIILLLLTASAPGVDVLPKTEDDVPLSSVYGNGKSILRGILRKGICC
+CMrX|marmoreus|T|134767.262032
+MRCLPVLIILLLLTASAPGVDVLPKTEDDVPLSSVYGNGKSILRGILRKGICC
+Im_MMLFM_1|imperialis|MMLFM|671.777385159
+MMLFLFAAIISTMVSTTMAGCESNKHKCAWKDPTGGKHNRCDCPKNTCTDDKNHTIIVDYGDTYIYEFYICKEIAKFPNCTGQEDVMDSSANEL
+Vr_T_22|varius|T|242.72195122
+MRCLPVFIILLLLVPTAHSIVAQLKTKYDVPKASFQDNAKGILQRHSGPHACCPEYDWCCLWRGEGKW
+
+################### reslice utrs
+
+cp ../../5makenewref/slicebatch ./slicebatch_utrs
+cp ../../5makenewref/venom_exon_wrapper_dir5.py ./venom_exon_wrapper_utrs.py
+cp ../../5makenewref/venom_exon_boundaries_dir5.py ./venom_exon_boundaries_utrs.py
+cp ../../5makenewref/add_column_to_bed_utr.py ./
+
+sbatch slicebatch_utrs
+
+runs python venom_exon_wrapper_utrs.py --map mapfile
+
+which runs:
+
+python venom_exon_boundaries_utrs.py {ID} {species}
+python add_column_to_bed_utr.py {ID}_stats_venombed_utr {ID}_stats_venombed_utr_annotated
+python make_final_analysis_bed.py {ID}_stats_venombed_utr_annotated {ID}_stats_venombed_annotated {ID}_stats_venombed_annotated_v3
+
+-- creates exon boundaries for the utrs
+
+1. *stats_venomblastcoordfile_utr -- blast coordinates for the transcript + utr regions
+2. *_stats_venombed_utr_annotated -- venombed with pieces attached
+3. *_stats_venombed_utr -- venom bed with how exons are cut up
+4. *_stats_venombed_annotated_v3 -- outputted final venombed file with sequences replaced if utrs did a better job of cutting up exons and gave me more information.
+
+
+############################### concatenate all annotated files
+
+cat *annotated_v3 > all_stats_venombed_annotated_v3
+
+python count_gene_families.py -- count number of gene superfamilies targetted and recovered
+
+needs:
+
+1. all_stats_venombed_annotated_v3
+2. venom_reference.fa
+
+
+venom_reference
+['A', 'B1', 'B2', 'B4', 'C', 'D', 'DivMKFPLLFISL', 'DivMKLCVVIVLL', 'DivMKLLLTLLLG', 'DivMKVAVVLLVS', 'DivMRFLHFLIVA', 'DivMRFYIGLMAA', 'DivMSKLVILAVL', 'DivMTAKATLLVL', 'DivMTLTFLLVVA', 'E', 'F', 'H', 'I1', 'I2', 'I3', 'I4', 'J', 'K', 'L', 'M', 'MEFRR', 'MEVKM', 'MKFLL', 'MKIVL', 'MMLFM', 'MNCYL', 'MTFYL', 'MTSTL', 'N', 'O1', 'O2', 'O3', 'P', 'S', 'T', 'V', 'Y', 'con-ikot-ikot', 'conkunitzin', 'conodipine', 'conohyal', 'conophysin', 'conoporin']
+49
+recovered
+['A', 'B1', 'B2', 'B4', 'C', 'D', 'DivMKFPLLFISL', 'DivMKLCVVIVLL', 'DivMKLLLTLLLG', 'DivMKVAVVLLVS', 'DivMRFLHFLIVA', 'DivMRFYIGLMAA', 'DivMSKLVILAVL', 'DivMTAKATLLVL', 'DivMTLTFLLVVA', 'E', 'F', 'H', 'I1', 'I2', 'I3', 'I4', 'J', 'K', 'L', 'M', 'MEFRR', 'MEVKM', 'MKFLL', 'MKIVL', 'MMLFM', 'MNCYL', 'MTFYL', 'MTSTL', 'N', 'O1', 'O2', 'O3', 'P', 'Q', 'S', 'T', 'V', 'Y', 'con-ikot-ikot', 'conkunitzin', 'conodipine', 'conohyal', 'conophysin', 'conoporin']
+50
+
+
+
+
+########################### generate venom capture results table (targeted, recovered, how many were in transcriptome)
+
+python count_num_genes_recovered.py
+
+requires:
+
+1. venom_reference.fa ## these sequences went onto the array
+2. all_stats_venombed_annotated_v3 ## these sequences had at least 90% identity to sequences from your transcriptome
+3. all_extractedseq_renamed.fa ## these sequences are all the sequences from your transcriptome work
+
+creates:
+
+1. did_not_sequence -- sequences from your transcriptomes that did not show up in exon capture
+2. conus_venom_captured.table -- table showing capture success (three numbers-- [targeted, recovered, how many were in transcriptome])
+3. conus_venom_captured_percentages -- table showing capture percentages by gene superfamily by species
+
