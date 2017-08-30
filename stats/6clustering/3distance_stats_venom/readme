@@ -1,0 +1,72 @@
+cp ../1cluster_sequences/*analyzethese.fa ./
+
+############## create mapfile for gene superfamilies and create genefamily and region specific fasta files:
+
+python separate.gene.families.py
+
+creates: 
+
+1. mapfile.genefamilies
+2. *.superfamily.fa
+
+################################
+
+
+python pdistvenom_wrapper.py --map mapfile.genefamilies
+
+generates all possible comparisons. decided to use cd-hit at 80% threshold to cluster sequences so that the alignments weren't so insane
+so that you could compare divergence in exons vs. adjacent introns
+
+
+this creates a mapfile for all comparisons you want to do, so that you can split it up on multiple computers
+
+
+python makemapfile.py
+
+python makebatchfiles.py
+
+
+sbatch venomdistbatch0
+sbatch venomdistbatch1
+sbatch venomdistbatch2
+sbatch venomdistbatch3
+
+cat *.datapoint > venom.datapoint
+
+
+
+### below did not happen second time I did this.
+
+there are 14 datapoints missing from our dataset for whatever reason
+discovered what they were with find_missing.py
+
+which created map_notdoneyet
+
+then did python pdist.venom.parallel.py --map map_notdoneyet
+
+cat *datapoint > notdoneyet.datapoint
+
+python filter_datapoints.and.annotate.py
+
+cat venom.datapoint notdoneyet.datapoint >all.venom.datapoints
+
+python checkunique.py
+
+360230 - number of comparisons needed to be done
+
+got 'region.distribution.for.scripting.stats' from /pylon2/bi4s86p/phuong/venom/stats/3exon_stats
+
+python filter_datapoints.and.annotate.py
+
+filters points if:
+
+a. alignment length grew 20% more than the length of the longer exon
+b. intron region is less than 50bp
+c. shorter exon was less than 70% of the length of the longer exon
+d. at least 50 points in entire gene family
+
+creates:
+
+1. venom.datapoints.filtered
+2. venom.datapoints.filtered.enoughdatapoints - analyze this, filtered gene families with very few comparisons
+

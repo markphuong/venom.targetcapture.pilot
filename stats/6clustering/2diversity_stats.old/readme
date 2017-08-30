@@ -1,0 +1,22 @@
+cp ../1cluster_sequences/*analyzethese.fa
+
+python get_diversity_stats.py
+
+requires:
+
+1. species_name_mapping
+2. *analyzethese.fa
+
+creates:
+
+1. conotoxin_diversity_by_gf_exon_after_filtering.stats - table for supplementary but not using anymore
+2. diversity_stats_for_r.stats - table for r stats
+
+
+###########################
+
+transposed diversity_stats_for_r.stats in excel
+
+to create:
+
+1. diversity_stats_transposed.txt

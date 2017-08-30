@@ -1,0 +1,37 @@
+cp ../0buildreference/myregionreference.fa ./
+
+
+makeblastdb -dbtype nucl -in myregionreference.fa
+
+
+############ took majority consensus exon configuration for each gene superfamily
+
+and then re-blasted to all the sequences, to reassign exon number and number of segments
+did this so easier to work with the sequences if you don't constantly have to deal with exceptions
+this is OK to do because exon1 is usually similar (genetic distances) to all other exon1's in a gene superfamily,
+despite having a differing numbers of exons composing the transcript
+
+
+sbatch venomblastbatch1
+
+kept all sequences that blasted to something in the reference, and was at least the same gene superfamily.
+
+creates:
+
+1. 80475.venom.blastoutput - blast output blasting *v6.fa to venom_diversity_stats.reference.fa
+2. 80475.firstpass.fa - sequences to analyze, has the gene family ID as the last value in the header
+3. 80475.failed - did not blast to anything. typically some weird exons (for example, there is one O1 conotoxin with a strange exon3|4pieces structure. like it's the same protein in several species. I don't know what this is. also contains terminal exons for some of the gene superfamilies that sometimes, got split into an additional exon.
+
+
+#######
+
+cat *firstpass.fa > myregionreference2.fa
+
+
+######### rerun blasting again to try to pick up any failed sequences that might not have blasted to the original reference
+
+makeblastdb -dbtype nucl -in myregionreference2.fa
+
+
+sbatch venomblastbatch2
+

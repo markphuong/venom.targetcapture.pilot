@@ -1,0 +1,16 @@
+cp ../../5repeat_regions/1process_phylogenetic_markers_repeat_exons/*cut*.fa ./
+cp ../../5repeat_regions/1process_phylogenetic_markers_repeat_exons/mapfile ./
+
+cat *.fa > all_cut_up_exons_plus_introns.fa
+
+calculated pdist.
+
+wrote out every single possible pairwise comparison per locus, separated them out into separate runs, and ran them all with like 20 batch files.
+
+compared pdist in introns vs. exons
+
+cat *datapoint > all.datapoint
+
+python filter_datapoints.py
+
+same filtering criteria as the venom exons

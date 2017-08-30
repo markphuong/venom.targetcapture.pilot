@@ -1,0 +1,6 @@
+cp ../../0venom_capture_success/*v5.fa ./
+cp ../../5repeat_regions/2compare_repeats_between_regions/*annotated ./
+cp ../../3exon_stats/majority_num_exons.reference ./
+
+python generate_venom_gene_trees_reference.py
+

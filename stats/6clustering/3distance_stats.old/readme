@@ -1,0 +1,14 @@
+mapfile -- contains all gene superfamilies
+
+python pdistvenom_wrapper.py --map mapfile.venomgenes
+
+generates all possible comparisons. decided to use cd-hit at 80% threshold to cluster sequences so that the alignments weren't so insane
+so that you could compare divergence in exons vs. adjacent introns
+
+
+this creates a mapfile for all comparisons you want to do, so that you can split it up on multiple computers
+
+
+python makemapfile.py
+
+python makebatchfiles.py

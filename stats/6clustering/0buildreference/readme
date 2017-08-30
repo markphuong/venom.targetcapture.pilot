@@ -1,0 +1,64 @@
+### add species names to headers
+
+scp analysis@azathoth.eeb.ucla.edu:/nfs/LabShared/MarkPhuong/exonCapturePilot/2recipblast_phylogenetics/6.1_filter_loci/5analyses/species_name_mapping ./
+cp ../0buildreference/venom_diversity_stats.reference.fa  ./
+
+
+python add_species_and_ID.py
+
+
+creates:
+
+1. definedseqs_v6.fa -- adds ID and species to header
+
+##################### assign regions to exons, based on region information from transcripts and assigning
+### those regions to the exon that has the highest proportion of that region. assigned signal and mature first. exons before matures are considered 'pre'
+### exons after mature are considered 'post'
+
+python assign.regions.wrapper.py --map mapfile
+
+runs:
+
+python assign.regions.py {species}_stats_venomblastcoordfile {species}_stats_venomblastcoordfile_utr {ID}_definedseqs_v5.fa {species}_stats_venombed_annotated_v3 {species}.my.region.assignments.info {index}
+
+you ignored instances where the signal and mature region wanted to be assigned to the same exon. you labeled these as 'FAILED' in the output files (*.info)
+
+ex. of this here:
+
+Eb_F_1|ebraeus|F|25862.6042403  66      258     mature
+{'3pieces|exon3': [266, 283], '3pieces|exon2': [164, 266], '3pieces|exon1': [0, 164]}
+Mr_F_2|marmoreus|F|36.7638190955        66      195     mature
+{'2pieces|exon2': [164, 199], '2pieces|exon1': [0, 164]}
+Mr_F_3|marmoreus|F|50.4325842697        66      174     mature
+{'2pieces|exon2': [164, 177], '2pieces|exon1': [0, 164]}
+
+#############
+
+write out sequences per species with region assignments appended to the end of the names
+
+python makefastas.py
+
+ignored instances where multiple regions were assigned to the same sequence -- I'll just let blast decide how to categorize them as most of the sequences were fine -- so basically getting
+to do the majority consensus thing.
+
+
+cat *.regions.identified.fa > myregionreference.fa
+
+
+cat *info >all.my.region.assignments.info
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
