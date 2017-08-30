@@ -1,7 +1,7 @@
 import os
 import sys
 
-############ store diet family map file into dictionary
+############# store diet family map file into dictionary
 
 myfam = open('preylist.families.added', 'r')
 
