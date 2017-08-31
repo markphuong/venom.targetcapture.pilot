@@ -1,0 +1,61 @@
+cp ../1cluster_sequences/*analyzethese.fa ./
+
+python get_diversity_stats.py
+
+requires:
+
+1. species_name_mapping
+2. *analyzethese.fa
+
+creates:
+
+1. conotoxin_diversity_by_gf_exon_after_filtering.stats - table for supplementary but not using anymore
+2. diversity_stats_for_r.stats - table for r stats
+
+
+###########################
+
+transposed diversity_stats_for_r.stats in excel
+
+to create:
+
+1. diversity_stats_transposed.txt
+
+
+
+########################## 
+
+python grab.analyzeable.familes.py
+
+requires: 
+
+1. diversity_stats_transposed.txt
+
+
+creates: 
+
+total number of gene families analyzeable was 47
+
+1. gene.family.sizes.all -- all gene families that are not singletons (37 gene families
+2. gene.family.sizes.70percent -- gene family is not extinct in at least 70% of the species
+3. gene.family.sizes.captureable -- gene families that had 80% capture rate
+
+you targeted 49 sequences, but you weren't able to successfully capture 2 families that were specific to californicus and only found in californicus.
+
+##############################
+
+
+note: 
+
+J_mature
+J_onepiece
+
+
+conkunitzin_mature
+conkunitzin_onepiece
+conkunitzin_post
+conkunitzin_pre
+conkunitzin_signal
+
+
+
